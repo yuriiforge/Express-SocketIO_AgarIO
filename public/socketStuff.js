@@ -20,9 +20,13 @@ const init = async () => {
 
 socket.on('tick', (playersArray) => {
   players = playersArray;
-  if (players[player.indexInPlayers].playerData) {
-    player.locX = players[player.indexInPlayers].playerData.locX;
-    player.locY = players[player.indexInPlayers].playerData.locY;
+
+  const current = players[player.indexInPlayers]?.playerData;
+  if (current) {
+    player.locX = current.locX;
+    player.locY = current.locY;
+
+    document.querySelector('.player-score').textContent = current.score ?? 0;
   }
 });
 

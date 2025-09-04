@@ -105,6 +105,13 @@ io.on('connect', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    for (let i = 0; i < players.length; i++) {
+      if (player[i].socketId === player.socketId) {
+        players.splice(i, 1, {});
+        playersForUsers.splice(i, 1, {});
+        break;
+      }
+    }
     if (players.length === 0) {
       clearInterval(tickTockInterval);
     }
