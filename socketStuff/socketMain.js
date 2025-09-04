@@ -15,19 +15,20 @@ const settings = {
   wordlHeight: 500,
   defaultGenericOrbSize: 5,
 };
+const players = [];
 
 initGame();
 
 io.on('connect', (socket) => {
   // a player has connected
-  const playerName = 'Yurii';
-  const playerConfig = new PlayerConfig(settings);
-  const playerData = new PlayerData(playerName, settings);
-  const player = new Player(socket.id, playerConfig, playerData);
+  socket.on('init', (playerObj, ackCallback) => {
+    const playerName = playerObj.playerName;
+    const playerConfig = new PlayerConfig(settings);
+    const playerData = new PlayerData(playerName, settings);
+    const player = new Player(socket.id, playerConfig, playerData);
+    players.push(player);
 
-  socket.emit('init', {
-    // make a playerConfig object
-    orbs,
+    ackCallback(orbs);
   });
 });
 
