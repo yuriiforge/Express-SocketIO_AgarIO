@@ -1,4 +1,4 @@
-const socket = io.connect('http://localhost:9000');
+const socket = io.connect('https://express-socketio-agario.onrender.com/');
 
 const init = async () => {
   const initData = await socket.emitWithAck('init', {
