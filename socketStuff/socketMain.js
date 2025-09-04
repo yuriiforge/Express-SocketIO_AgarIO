@@ -87,6 +87,7 @@ io.on('connect', (socket) => {
       };
       // emit to all sockets playing the game, the orbSwitch event
       io.to('game').emit('orbSwitch', orbData);
+      io.to('game').emit('updateLeaderBoard', getLeaderBoard());
     }
 
     const absorbData = checkForPlayerCollisions(
@@ -99,6 +100,7 @@ io.on('connect', (socket) => {
 
     if (absorbData) {
       io.to('game').emit('playerAbsorbed', absorbData);
+      io.to('game').emit('updateLeaderBoard', getLeaderBoard());
     }
   });
 
@@ -113,6 +115,21 @@ function initGame() {
   for (let i = 0; i < settings.defaultNumberOfOrbs; i++) {
     orbs.push(new Orb(settings));
   }
+}
+
+function getLeaderBoard() {
+  const leaderBoardArray = players.map((curPlayer) => {
+    if (curPlayer.playerData) {
+      return {
+        name: curPlayer.playerData.name,
+        score: curPlayer.playerData.score,
+      };
+    } else {
+      return {};
+    }
+  });
+
+  return leaderBoardArray;
 }
 
 module.exports = io;
