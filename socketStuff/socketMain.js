@@ -4,6 +4,10 @@ const Player = require('./classes/Player');
 const PlayerConfig = require('./classes/PlayerConfig');
 const PlayerData = require('./classes/PlayerData');
 const Orb = require('./classes/Orb');
+const checkForOrbCollisions =
+  require('./checkCollisions').checkForOrbCollisions;
+const checkForPlayerCollisions =
+  require('./checkCollisions').checkForPlayerCollisions;
 
 const orbs = [];
 const settings = {
@@ -55,18 +59,46 @@ io.on('connect', (socket) => {
     const yV = (player.playerConfig.yVector = data.yVector);
 
     if (
-      (player.playerData.locX < 5 && xV < 0) ||
-      (player.playerData.locX > 500 && xV > 0)
-    ) {
-      player.playerData.locY -= speed * yV;
-    } else if (
-      (player.playerData.locY < 5 && yV > 0) ||
-      (player.playerData.locY > 500 && yV < 0)
+      (player.playerData.locX > 5 && xV < 0) ||
+      (player.playerData.locX < 500 && xV > 0)
     ) {
       player.playerData.locX += speed * xV;
-    } else {
-      player.playerData.locX += speed * xV;
+    }
+    if (
+      (player.playerData.locY > 5 && yV > 0) ||
+      (player.playerData.locY < 500 && yV < 0)
+    ) {
       player.playerData.locY -= speed * yV;
+    }
+
+    const capturedOrbI = checkForOrbCollisions(
+      player.playerData,
+      player.playerConfig,
+      orbs,
+      settings
+    );
+
+    if (capturedOrbI !== null) {
+      orbs.splice(capturedOrbI, 1, new Orb(settings));
+
+      const orbData = {
+        capturedOrbI,
+        newOrb: orbs[capturedOrbI],
+      };
+      // emit to all sockets playing the game, the orbSwitch event
+      io.to('game').emit('orbSwitch', orbData);
+    }
+
+    const absorbData = checkForPlayerCollisions(
+      player.playerData,
+      player.playerConfig,
+      players,
+      playersForUsers,
+      socket.id
+    );
+
+    if (absorbData) {
+      io.to('game').emit('playerAbsorbed', absorbData);
     }
   });
 
